@@ -14,12 +14,18 @@ class TodoListViewController: UITableViewController {
     
     var itemArray = ["Item 1","Item 2","Item 3"]
     
+    let defaults = UserDefaults.standard
+    
     
     //MARK - viewDidLoad()
     
     override func viewDidLoad() {
 
         super.viewDidLoad()
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+        }
 
     }
 
@@ -54,8 +60,8 @@ class TodoListViewController: UITableViewController {
         }
         
         tableView.deselectRow(at: indexPath, animated: true)
-        
     }
+    
     
     // Mark - Add New List Items
     
@@ -72,8 +78,9 @@ class TodoListViewController: UITableViewController {
             
             self.itemArray.append(textField.text!)
             
-            self.tableView.reloadData()
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")
             
+            self.tableView.reloadData()
         }
         
         alert.addTextField { (alertTextField) in
@@ -85,7 +92,6 @@ class TodoListViewController: UITableViewController {
         alert.addAction(action)
         
         present(alert, animated: true, completion: nil)
-        
     }
     
 
@@ -120,6 +126,11 @@ class TodoListViewController: UITableViewController {
  
  UITextField
     .text =
+ 
+ UserDefaults
+    .standard
+    .set(value, forKey: )
+ .array(forKey: )
  
  present(viewControllerToPresent: someViewController, animated: Bool, completion: <#T##(() -> Void)?##(() -> Void)?##() -> Void#>)
  
