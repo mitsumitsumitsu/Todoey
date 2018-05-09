@@ -12,7 +12,7 @@ class TodoListViewController: UITableViewController {
 
     //MARK - Class Properties
     
-    let itemArray = ["Item 1","Item 2","Item 3"]
+    var itemArray = ["Item 1","Item 2","Item 3"]
     
     
     //MARK - viewDidLoad()
@@ -56,6 +56,38 @@ class TodoListViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
         
     }
+    
+    // Mark - Add New List Items
+    
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
+        var textField = UITextField()
+        
+        let alert = UIAlertController(title: "Add New Todoey Item", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+            // What will happen once the user clicks the Add Item button on our UIAlert
+            
+            print("Test - Add Item press complete. Item: \(textField.text)")
+            
+            self.itemArray.append(textField.text!)
+            
+            self.tableView.reloadData()
+            
+        }
+        
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Create new item"
+            textField = alertTextField
+            print("Test")
+        }
+        
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion: nil)
+        
+    }
+    
 
     
 }
@@ -71,9 +103,24 @@ class TodoListViewController: UITableViewController {
         - When tap on row, momentarily highlight the row only. Not permanent
     .cellForRow(at..)
     .cellForRow(at..)?.accessoryType
+    .reloadData()
  
  UITableViewCell
     reuseIdentifier
     textLabel?.text
+ 
+ UIAlertController
+    (title.. message.. preferredStyle)
+    .addTextField { (someData) in.. }
+    .addAction(action: UIAlertAction)
+
+ UIAlertAction
+    (title.. style..) { (someData) in
+    someData.placeholder
+ 
+ UITextField
+    .text =
+ 
+ present(viewControllerToPresent: someViewController, animated: Bool, completion: <#T##(() -> Void)?##(() -> Void)?##() -> Void#>)
  
  */
