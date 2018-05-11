@@ -15,32 +15,20 @@ class TodoListViewController: UITableViewController {
     
     var itemArray = [Item]()
     
-    let defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
+    // Create your own plist at the location of your dataFilePath
     
     
     //MARK - viewDidLoad()
     
     override func viewDidLoad() {
-
+        
         super.viewDidLoad()
-  
-        let newItem = Item()
-        newItem.title = "Find Mike"
-        newItem.done = true
-        itemArray.append(newItem)
-
-        let newItem2 = Item()
-        newItem2.title = "Buy Eggs"
-        itemArray.append(newItem2)
         
-        let newItem3 = Item()
-        newItem3.title = "Some other task"
-        itemArray.append(newItem3)
+        print(dataFilePath)
         
-        // Populate array if there is data from the UserDefault plist
-        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
-           itemArray = items
-        }
+        loadItems()
 
     }
 
@@ -81,8 +69,7 @@ class TodoListViewController: UITableViewController {
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
             // Changes current value to the opposite of what it is right now.
         
-        tableView.reloadData()
-            // Call datasource method again
+        saveItems()
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -106,9 +93,8 @@ class TodoListViewController: UITableViewController {
             
             self.itemArray.append(newItem)
             
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            self.saveItems()
             
-            self.tableView.reloadData()
         }
         
         alert.addTextField { (alertTextField) in
@@ -122,7 +108,39 @@ class TodoListViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    
+    // MARK - Model Manipulation Methods
 
+    func saveItems(){
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array: \(error) ")
+            print(error)
+        }
+        
+        self.tableView.reloadData()
+    }
+    
+    func loadItems() {
+        
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+                    // .self used in order to refer to the type which is an array of Item objets
+            } catch {
+                print("Error decoding array: \(error)")
+            }
+        }
+        
+        
+    }
+    
+    
     
 }
 
@@ -163,6 +181,31 @@ class TodoListViewController: UITableViewController {
     .set(value, forKey: )
     .array(forKey: )
  
- present(viewControllerToPresent: someViewController, animated: Bool, completion: <#T##(() -> Void)?##(() -> Void)?##() -> Void#>)
+ FileManager
+ (An object that provides a convenient interface to the contents of the file system)
+    .default
+    (Returns the shared FileManager object)
+        .urls(for: FileManager.SearchPathDirectory, in : FileManager.SearchPathDomaininMask)
+        (userDomainMask - User's home directory. Where they'll save items associated w/ app)
+            .first
+            (Because this is an array, grab first item)
+                .appendingPathComponent(pathComponent : String)
+                (pathComponent can be named anything, just make it logical)
+                (This method will create the plist file of the given file name
+
+ PropertyListEncoder
+ (In the app, this will encoder your data, the itemArray, into a plist)
+    .encode(value: Encodable)
+    (Can throw an error, so should enclose in a do { } catch {} block (with try)
+    .write
+
+ Data
+    (contentsOf: filePath)
+ 
+ PropertyListDecoder
+    .decode(type: Decodable.Protocol, from: Data(
+
+ 
+ present(viewControllerToPresent: someViewController, animated: Bool, completion:  (() -> Void)?)
  
  */
