@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,7 +20,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
-        print("didFinishLaunching")
+        //print(Realm.Configuration.defaultConfiguration.fileURL)
+            // Commented out just to remove warnings, but this can be useful later on if you want to get file location of the realm file
+        
+        do {
+            _ = try Realm()
+        } catch {
+            print("Error initializing new Realm : \(error)")
+        }
         
         return true
     }
@@ -32,46 +39,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
 
         print("applicationWillTerminate")
-        self.saveContext()
     }
     
-    
-    // MARK: - Core Data stack
-    
-    lazy var persistentContainer: NSPersistentContainer = {
-  
-        let container = NSPersistentContainer(name: "DataModel")
-            // Create NSPersistentContainer using our core data "DataModel"
-            // This is the DB we will be saving to
-        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error as NSError? {
-   
-                fatalError("Unresolved error \(error), \(error.userInfo)")
-            }
-        })
-        return container
-        // When this container is returned, we will be able to access the object in our classess and save or pull data as needed
-    }()
-    
-    
-    // MARK: - Core Data Saving support
-    // Support when saving data when application gets terminated
-    
-    func saveContext () {
-        let context = persistentContainer.viewContext
-            // viewContext is an area where you can change and update your data so that you can undo and redo until you're happy with your data and save the data in uyour context (which is temporary), to the container (which is for permanent storage
-            // Context is similar to the Staging area in GitHUb
-        if context.hasChanges {
-            do {
-                try context.save()
-                    // Once we are happy with the changes, we commit to permament storage
-            } catch {
-
-                let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-            }
-        }
-    }
     
     
 }
@@ -119,6 +88,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
  func applicationDidBecomeActive(_ application: UIApplication) {
  // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
  }
+ 
+
+ 
+ Realm
+    .write
+        Write the data to the persistent storage
+    .add
+        Add the specific object ot the persistent storage
+    .Configuration.defaultConfiguration.fileURL
+        Location of Realm file
  
  */
 
