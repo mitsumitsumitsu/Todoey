@@ -10,7 +10,7 @@ import UIKit
 import RealmSwift
 
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
 
     // Global Variables and Constants
     
@@ -23,9 +23,8 @@ class CategoryViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        tableView.rowHeight = 80
         loadCategories()
-        
     }
     
     
@@ -39,21 +38,21 @@ class CategoryViewController: UITableViewController {
     
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        print("fucking categories")
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-        
+
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        // Taps into the cell that is created insie the Super View (It is the super class SwipeTableCell that handles the cell actions)
+
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added yet"
         
         return cell
     }
+        // So when this method it called, the first thing it does is since wse called Super, it goes into the superclass and triggers the code inside cellForRowAt indexPath
+                // This method will create a new cell, from the prototype "Cell" and is created as a SwipeTableViewCell
     
     
     // MARK: - Data Manipulation Methods
-    // Save Data and Load Data
 
-    
-    func save(category: Category){
-        
+    func save(category: Category) {
         do {
             try realm.write {
                 realm.add(category)
@@ -61,19 +60,35 @@ class CategoryViewController: UITableViewController {
         } catch {
             print("Error saving context : \(error)")
         }
-        
+        print("Save Category successful")
         self.tableView.reloadData()
     }
     
-    
-    // loadCategories() **********
-    
-    func loadCategories() {
 
+    func loadCategories() {
         categories = realm.objects(Category.self)
-        
+        print("loadCategories() called")
         tableView.reloadData()
     }
+    
+    
+    // MARK: Delete Data from Swipe
+    
+    override func updateModel(at indexPath: IndexPath) {
+        
+        // You can call original updateModel func by saying super.updateModel(at: indexPath)
+        
+        if let categoryForDeletion = self.categories?[indexPath.row] {
+            do  {
+                try self.realm.write {
+                    self.realm.delete(categoryForDeletion)
+                }
+            } catch {
+                print("Error deleting category: \(error)")
+            }
+        }
+    }
+        // override the updateModel function from SwipeTableViewController
     
     
     // MARK: - Add New Categories
@@ -117,24 +132,18 @@ class CategoryViewController: UITableViewController {
         let destinationVC = segue.destination as! TodoListViewController
         
         if let indexPath = tableView.indexPathForSelectedRow {
-            
             destinationVC.selectedCategory = categories?[indexPath.row]
                 // Need to create the property selectedVategory in the ToDoListCOntroller
-        
         }
             // The indexPath that will indicate the current row that is selected
     }
+    
     
 }
 
 
 
 /*
-
- let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    - A singleton App instance. At the timepoint when the app is running, the shared UIApplication will correspond to the live application object
-    - Tap into UIApplication class --> getting the shared singelton object, which corresponds to the current app as an object --> Tap into its delegate which has the data type of an optional UIApplication delegate --> cast into our class AppDelegate because they both inherit from the same super class UIApplication delegate --> (Now we have access to our app delegate as an object) --> Now can tap into its property called persistentContainer --> Grab the viewContext of that persistent container
-
  let newCategory = Category(context: self.context)
     - let newItem = Item(context: NSManagedObjectContext)
     - context - context where this item is going to exist. The view context of our persistent container
