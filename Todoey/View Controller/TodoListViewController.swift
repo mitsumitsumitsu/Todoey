@@ -8,8 +8,9 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
 
     //MARK - Class Properties
     
@@ -32,11 +33,10 @@ class TodoListViewController: UITableViewController {
     //MARK - viewDidLoad()
     
     override func viewDidLoad() {
-        
         super.viewDidLoad()
-        
-        let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        _ = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
             // Just to get a path for where the data is being stored in our app
+        tableView.separatorStyle = .none
     }
 
     
@@ -52,21 +52,34 @@ class TodoListViewController: UITableViewController {
 
         print("cellForRowAt indexPath called")
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+            // You are using the cellForRowAt method in the SwipeTableViewController
 
         if let item = todoItems?[indexPath.row] {
             // if todoItems is not nil, then grab the item at indexPath.row
             
             cell.textLabel?.text = item.title
             
+            if let color = UIColor(hexString: selectedCategory!.color)?.darken(byPercentage:
+                (CGFloat(indexPath.row) / CGFloat(todoItems!.count))
+                ) {
+                
+                cell.backgroundColor = color
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+            }
+            
             cell.accessoryType = item.done == true ? .checkmark : .none
                 // Ternary Operator: Value = condition ? valueIfTrue : valueIfFalse
+       
         } else {
             cell.textLabel?.text = "No Items Added"
         }
+            // You have an OPTIONAL BINDING PYRAMID here, which is a common occurence in swift
 
         return cell
     }
+        // (hexString: selectedCategory! - Force unwrap because you were able to unwrap selectedCategory earlier in the first place
+        // UIColor(hexString: selectedCategory!.color)? - UIColor returns optional, so can do optional chaining. Darken will only occur if the value isn't nil
     
     
     // MARK - TableView Delegate Methods
@@ -78,9 +91,10 @@ class TodoListViewController: UITableViewController {
         
         if let item = todoItems?[indexPath.row] {
             do {
-                try realm.write {
-                    realm.delete(item)
-                    // item.done = !item.done
+                try self.realm.write {
+                    //self.realm.delete(item)
+                    item.done = !item.done
+                    print("Item checked / unchecked")
                 }
             } catch {
                 print("Error saving done status: \(error)")
@@ -88,6 +102,8 @@ class TodoListViewController: UITableViewController {
         }
         
         tableView.reloadData()
+        
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     
@@ -133,18 +149,22 @@ class TodoListViewController: UITableViewController {
     
     // MARK - Model Manipulation Methods
     
-
-    // saveItems() **********
-    // Commit context to permanent storage inside persistentContainer
-    
-    
-    // loadItems() **********
-    
     func loadItems() {
-        
+
         todoItems = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
-        
         tableView.reloadData()
+    }
+    
+    override func updateModel(at indexPath: IndexPath) {
+        if let itemForDeletion = self.todoItems?[indexPath.row] {
+            do  {
+                try realm.write {
+                    realm.delete(itemForDeletion)
+                }
+            } catch {
+                print("Error deleting category: \(error)")
+            }
+        }
     }
 
 }
@@ -245,19 +265,11 @@ extension TodoListViewController: UISearchBarDelegate {
  
  present(viewControllerToPresent: someViewController, animated: Bool, completion:  (() -> Void)?)
  
+ CGFloat(indexPath.row / todoItems!.count)
+ --> Inner equation returns an int that is rounded up or down to whole number, so for example 0.00 becomes 0. So whatever happens, CGFloat will return a whole number, which isn't what we want since we are after gradients
  
- Deleted Code:
- 
- // let encoder = PropertyListEncoder() - Commented out because you no longer need the encoder. You will be using Data Core and SQLite
- //
- // do {
- // let data = try encoder.encode(itemArray)
- // try data.write(to: dataFilePath!)
- // } catch {
- // print("Error encoding item array: \(error) ")
- // print(error)
- // }
- 
+ CGFloat(indexPath.row) / CGFloat(todoItems!.count)
+ --> Returns a float
  
  
  */
